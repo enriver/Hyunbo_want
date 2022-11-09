@@ -1,5 +1,5 @@
 # key 파일 무시
-key.py
+secretKey.py
 
 # Firebase credential key ignore
 hyunbo_cred.json
