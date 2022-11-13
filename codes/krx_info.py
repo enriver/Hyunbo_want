@@ -10,11 +10,14 @@ class KRX_Info:
 
     def getCodeDict(self):
         self.__df_krx = fdr.StockListing('KRX')
+        self.__df_krx = self.__df_krx.sort_values(by=['Code']).reset_index(drop=True)
+
+        codeDict = dict()
 
         for i in range(self.__df_krx.shape[0]):
-            self.codeDict[self.__df_krx['Code'][i]] = self.__df_krx['Name'][i]
+            codeDict[self.__df_krx['Code'][i]] = self.__df_krx['Name'][i]
 
-        return self.ccodeDict
+        return codeDict
     
     def getClose(self,code):
         today = datetime.today()
