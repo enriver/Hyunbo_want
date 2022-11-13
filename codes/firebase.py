@@ -60,4 +60,5 @@ class Firebase:
         if self.__dir.get() is True:
             return True
         else:
+            self.__dir.set(True)
             return False
