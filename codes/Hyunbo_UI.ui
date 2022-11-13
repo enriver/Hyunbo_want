@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
@@ -307,11 +307,14 @@
       <string>관심종목</string>
      </attribute>
      <widget class="QTableWidget" name="tbl_intrst_all">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>120</x>
         <y>80</y>
-        <width>331</width>
+        <width>430</width>
         <height>501</height>
        </rect>
       </property>
@@ -322,8 +325,23 @@
         <bold>false</bold>
        </font>
       </property>
+      <property name="accessibleName">
+       <string/>
+      </property>
       <property name="layoutDirection">
        <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustToContents</enum>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="textElideMode">
+       <enum>Qt::ElideMiddle</enum>
+      </property>
+      <property name="sortingEnabled">
+       <bool>false</bool>
       </property>
       <column>
        <property name="text">
@@ -361,11 +379,24 @@
      <widget class="QTableWidget" name="tbl_intrst_intrst">
       <property name="geometry">
        <rect>
-        <x>770</x>
+        <x>650</x>
         <y>80</y>
-        <width>311</width>
+        <width>430</width>
         <height>501</height>
        </rect>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>11</pointsize>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
       </property>
       <column>
        <property name="text">
@@ -403,7 +434,7 @@
      <widget class="QLabel" name="label">
       <property name="geometry">
        <rect>
-        <x>210</x>
+        <x>260</x>
         <y>40</y>
         <width>141</width>
         <height>31</height>
@@ -417,6 +448,9 @@
         <bold>true</bold>
        </font>
       </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
       <property name="text">
        <string>모든 종목</string>
       </property>
@@ -424,7 +458,7 @@
      <widget class="QLabel" name="label_2">
       <property name="geometry">
        <rect>
-        <x>860</x>
+        <x>800</x>
         <y>40</y>
         <width>141</width>
         <height>31</height>
