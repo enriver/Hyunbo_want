@@ -1,8 +1,11 @@
-from server import Server
+from datetime import datetime
+import pandas as pd
 import sys
+
+from server import Server
 from PyQt5.QtWidgets import *
 from PyQt5 import uic
-import pandas as pd
+from PyQt5.QtCore import QSize
 
 # UI파일 연결
 form_class = uic.loadUiType("Hyunbo_UI.ui")[0]
@@ -16,11 +19,24 @@ class WindowClass(QMainWindow, form_class):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.setWindowTitle("현보현보")
+        self.setFixedSize(QSize(1200,700))
 
         # 서버 연결
         self.server = Server()
-              
-        # 관심종목 불러오기
+
+        # 새로고침 불러오기
+        refreshTime = self.server.getRefreshTime()
+
+        if refreshTime is None :
+            pass
+        else:
+            self.txt_stock_refreshTime.setText(refreshTime)
+
+        # 새로고침 시간 저장하기
+        self.btn_stock_refresh.clicked.connect(self.btnRefresh)
+
+        # 관심종목 TAB-관심종목 불러오기 (/INTEREST_STOCK/)
         interestDict = self.server.getInterestInfo()
 
         if interestDict is None :
@@ -29,7 +45,8 @@ class WindowClass(QMainWindow, form_class):
         else:
             self.intrstSet = set(interestDict.keys())
 
-            self.intrstRowNum = len(interestDict)-1
+            self.intrstRowNum = len(interestDict)
+            print(self.intrstRowNum, '불러온 DICT의 길이')
             self.tbl_intrst_intrst.setRowCount(self.intrstRowNum)
             #self.tbl_intrst_intrst.setRowCount(10)
         
@@ -39,7 +56,7 @@ class WindowClass(QMainWindow, form_class):
                 self.tbl_intrst_intrst.setItem(i,1,QTableWidgetItem(str(StockName)))
                 i+=1
 
-        # 관심종목 TAB-모든종목 설정
+        # 관심종목 TAB-모든종목 설정 (/CODE_DICT/)
         self.tickerDict = self.server.getTickerInfo() # dict
         
         self.tbl_intrst_all.setRowCount(len(self.tickerDict))
@@ -62,6 +79,12 @@ class WindowClass(QMainWindow, form_class):
         # 관심종목 TAB-관심종목 삭제
         self.tbl_intrst_intrst.doubleClicked.connect(self.deleteIntrst)
 
+    # 새로고침 버튼 클릭
+    def btnRefresh(self):
+        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.server.saveRefreshTime(now)
+        self.txt_stock_refreshTime.setText(now)
+
     # 관심종목 TABLE 및 DB에 종목 추가
     def addIntrst(self):
         row =  self.tbl_intrst_all.currentIndex().row()
@@ -69,12 +92,12 @@ class WindowClass(QMainWindow, form_class):
         stockName = self.tbl_intrst_all.item(row,1).text()
 
         if ticker not in self.intrstSet:
-            self.intrstRowNum+=1
 
-           # self.tbl_intrst_intrst.setRowCount(self.intrstRowNum)
-            self.tbl_intrst_intrst.insertRow(self.intrstRowNum)
+            self.tbl_intrst_intrst.setRowCount(self.intrstRowNum+1)
+            #self.tbl_intrst_intrst.insertRow(self.intrstRowNum)
             self.tbl_intrst_intrst.setItem(self.intrstRowNum,0,QTableWidgetItem(ticker))
             self.tbl_intrst_intrst.setItem(self.intrstRowNum,1,QTableWidgetItem(stockName))
+            self.intrstRowNum+=1
 
             self.server.setInterestInfo({ticker:stockName})
             self.intrstSet.add(ticker)
@@ -92,6 +115,9 @@ class WindowClass(QMainWindow, form_class):
         self.server.deleteInterestInfo(ticker)
         self.intrstSet.remove(ticker)
 
+    # 프로그램 종료시 이벤트
+    def closeEvent(self, event):
+        pass
         
 
 
