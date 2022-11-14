@@ -17,6 +17,20 @@ class Server(Firebase, KRX):
             self.db.setAddress('DEFAULT_SETTING/SAVE_CODE_DICT')
             self.db.setDB(True)
 
+    # 새로고침 시간 저장하기
+    def saveRefreshTime(self,nowTime):
+        self.db.setAddress('DEFAULT_SETTING/REFRESH_TIME')
+        self.db.setDB(nowTime)
+        
+    # 새로고침 시간 가져오기
+    def getRefreshTime(self):
+        self.db.setAddress('DEFAULT_SETTING/REFRESH_TIME')
+        refreshTime = self.db.getDB()
+
+        if refreshTime is None:
+            return None
+        return refreshTime
+
     # {Ticker:종목명} dictionary return
     def getTickerInfo(self):
         self.db.setAddress('CODE_DICT')
