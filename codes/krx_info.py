@@ -19,16 +19,10 @@ class KRX_Info:
 
         return codeDict
     
-    def getClose(self,code):
-        today = datetime.today()
+    def getClose(self,nowTime,ticker):
+        lastYear = str(int(nowTime[:4])-1)
+        lastTime = lastYear+nowTime[4:]
 
-        year  = today.year
-        month = today.month
-        day   = today.day
-
-        s_day = str(year-1)+'-'+str(month)+'-'+str(day) # 시작날짜
-        l_day = str(year)  +'-'+str(month)+'-'+str(day) # 종료날짜
-
-        self.__df_krx=fdr.DataReader(code,s_day,l_day)
+        self.__df_krx=fdr.DataReader(ticker,lastTime,nowTime)
         
-        return self.__df_krx['Close']
+        return self.__df_krx

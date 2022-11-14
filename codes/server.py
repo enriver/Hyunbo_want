@@ -6,16 +6,33 @@ import json
 class Server(Firebase, KRX):
     def __init__(self):
         self.db = Firebase() # DB연결
-        stock = KRX() # StockInfo 연결
+        self.stock = KRX() # StockInfo 연결
         
         if self.db.checkDB('SAVE_CODE_DICT') is False:
             self.db.setAddress('CODE_DICT')
 
-            codeDict = stock.getCodeDict()
+            codeDict = self.stock.getCodeDict()
             self.db.setDB(codeDict)
 
             self.db.setAddress('DEFAULT_SETTING/SAVE_CODE_DICT')
             self.db.setDB(True)
+
+    # 주가 정보 DB에 저장하기
+    def saveStock(self,dfStockDict):
+        self.db.setAddress('STOCK_CLOSE_INFO')
+        self.db.deleteDB()
+        self.db.updateDB(dfStockDict)
+
+    # DB에서 주가 정보 불러오기
+    def getStockFromDB(self):
+        if self.db.getAddress() != 'STOCK_CLOSE_INFO':
+            self.db.setAddress('STOCK_CLOSE_INFO')
+
+        return self.db.getDB()
+
+    # 주가 정보 받아오기
+    def getStockClose(self,nowTime,ticker):
+        return self.stock.getClose(nowTime,ticker)
 
     # 새로고침 시간 저장하기
     def saveRefreshTime(self,nowTime):
