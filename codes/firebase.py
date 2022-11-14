@@ -63,7 +63,8 @@ class Firebase:
             return False
 
     # 현재 reference 경로에 잆는 값 삭제
-    def deleteDB(self,path):
-        self.__dir = db.reference(self.__address+'/'+path)
+    def deleteDB(self,path=None):
+        if path is not None:
+            self.__dir = db.reference(self.__address+'/'+path)
 
         self.__dir.delete()
