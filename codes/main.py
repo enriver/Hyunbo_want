@@ -21,16 +21,17 @@ class WindowClass(QMainWindow, form_class):
         self.server = Server()
               
         # 관심종목 불러오기
-        interestDict = self.server.get_InterestInfo()
-        self.intrstSet = interestDict.keys()
+        interestDict = self.server.getInterestInfo()
 
         if interestDict is None :
             self.intrstRowNum = -1
-            self.tbl_intrst_intrst.setRowCount(10)
+            #self.tbl_intrst_intrst.setRowCount(10)
         else:
+            self.intrstSet = set(interestDict.keys())
+
             self.intrstRowNum = len(interestDict)-1
-            #self.tbl_intrst_intrst.setRowCount(self.intrstRowNum)
-            self.tbl_intrst_intrst.setRowCount(10)
+            self.tbl_intrst_intrst.setRowCount(self.intrstRowNum)
+            #self.tbl_intrst_intrst.setRowCount(10)
         
             i=0
             for ticker,StockName in interestDict.items():
@@ -39,7 +40,7 @@ class WindowClass(QMainWindow, form_class):
                 i+=1
 
         # 관심종목 TAB-모든종목 설정
-        self.tickerDict = self.server.get_TickerInfo() # dict
+        self.tickerDict = self.server.getTickerInfo() # dict
         
         self.tbl_intrst_all.setRowCount(len(self.tickerDict))
         i=0
@@ -56,32 +57,42 @@ class WindowClass(QMainWindow, form_class):
         tbl_intrst_intrst_header.resizeSection(1,280)
 
         # 관심종목 TAB-관심종목 추가
-        self.tbl_intrst_all.doubleClicked.connect(self.add_intrst)
+        self.tbl_intrst_all.doubleClicked.connect(self.addIntrst)
 
         # 관심종목 TAB-관심종목 삭제
-        self.tbl_intrst_intrst.doubleClicked.connect(self.delete_intrst)
+        self.tbl_intrst_intrst.doubleClicked.connect(self.deleteIntrst)
 
     # 관심종목 TABLE 및 DB에 종목 추가
-    def add_intrst(self):
+    def addIntrst(self):
         row =  self.tbl_intrst_all.currentIndex().row()
         ticker = self.tbl_intrst_all.item(row,0).text()
         stockName = self.tbl_intrst_all.item(row,1).text()
 
         if ticker not in self.intrstSet:
             self.intrstRowNum+=1
-            #self.tbl_intrst_intrst.setRowCount(self.intrstRowNum)
+
+           # self.tbl_intrst_intrst.setRowCount(self.intrstRowNum)
+            self.tbl_intrst_intrst.insertRow(self.intrstRowNum)
             self.tbl_intrst_intrst.setItem(self.intrstRowNum,0,QTableWidgetItem(ticker))
             self.tbl_intrst_intrst.setItem(self.intrstRowNum,1,QTableWidgetItem(stockName))
 
-            self.server.set_InterestInfo({ticker:stockName})
+            self.server.setInterestInfo({ticker:stockName})
+            self.intrstSet.add(ticker)
             #self.tbl_intrst_intrst.resizeColumnsToContents()
         else:
             print('이미 관심종목에 추가한 종목입니다.')
 
     # 관심종목 TABLE 및 DB에서 종목 삭제
-    def delete_intrst(self):
+    def deleteIntrst(self):
         row = self.tbl_intrst_intrst.currentRow()
+        ticker = self.tbl_intrst_intrst.item(row,0).text()
         self.tbl_intrst_intrst.removeRow(row)
+        self.intrstRowNum-=1
+
+        self.server.deleteInterestInfo(ticker)
+        self.intrstSet.remove(ticker)
+
+        
 
 
 if __name__=="__main__":
