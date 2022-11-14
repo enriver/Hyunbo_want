@@ -18,7 +18,7 @@ class Server(Firebase, KRX):
             self.db.setDB(True)
 
     # {Ticker:종목명} dictionary return
-    def get_TickerInfo(self):
+    def getTickerInfo(self):
         self.db.setAddress('CODE_DICT')
         codeDict = self.db.getDB()
         codeDict = codeDict.replace("'","\"")
@@ -27,7 +27,7 @@ class Server(Firebase, KRX):
         return codeDict
 
     # 관심종목 불러오기 {Ticker : 종목명} dictionary return
-    def get_InterestInfo(self):
+    def getInterestInfo(self):
         self.db.setAddress('INTEREST_STOCK')
         interestDict = self.db.getDB()
 
@@ -37,10 +37,14 @@ class Server(Firebase, KRX):
         return interestDict
 
     # 관심종목 추가하기 {Ticker : 종목명}
-    def set_InterestInfo(self,tickerJSON):
-        if self.db.getAddress() != 'INTEREST_STOCK':
+    def setInterestInfo(self,tickerJSON):
+        self.db.setAddress('INTEREST_STOCK')
+        self.db.updateDB(tickerJSON)
+
+    # 관심종목 삭제하기 {Ticker}
+    def deleteInterestInfo(self,ticker):
+        if self.db.getAddress()!= 'INTEREST_STOCK':
             self.db.setAddress('INTEREST_STOCK')
 
-        self.db.updateDB(tickerJSON)
-        
-
+        self.db.deleteDB(ticker)
+    
