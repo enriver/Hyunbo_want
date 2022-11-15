@@ -34,9 +34,6 @@ class WindowClass(QMainWindow, form_class):
         else:
             self.txt_stock_refreshTime.setText(refreshTime)
 
-        # 새로고침 시간 저장하기
-        self.btn_stock_refresh.clicked.connect(self.btnRefresh)
-
         # 관심종목 TAB-관심종목 불러오기 (/INTEREST_STOCK/)
         interestDict = self.server.getInterestInfo()
 
@@ -47,7 +44,7 @@ class WindowClass(QMainWindow, form_class):
             self.intrstSet = set(interestDict.keys())
 
             self.intrstRowNum = len(interestDict)
-            print(self.intrstRowNum, '불러온 DICT의 길이')
+            #print(self.intrstRowNum, '불러온 DICT의 길이')
             self.tbl_intrst_intrst.setRowCount(self.intrstRowNum)
             #self.tbl_intrst_intrst.setRowCount(10)
         
@@ -59,10 +56,23 @@ class WindowClass(QMainWindow, form_class):
 
         # 주가정보 TAB-초기 종가 등록
         if self.intrstRowNum > 0 :
-            val = self.server.getStockFromDB()
-            print(type(val))
-            print(val)
-            pass
+            stockClose = self.server.getStockCloseFromDB()
+            self.df_stock = pd.DataFrame.from_dict(stockClose)
+
+            self.tbl_stock_info.setRowCount(self.df_stock.shape[0])
+            self.tbl_stock_info.setColumnCount(self.df_stock.shape[1])
+            self.tbl_stock_info.setHorizontalHeaderLabels(self.df_stock.columns.tolist())
+
+            print(self.df_stock)
+            # 생성된 종목-종가 데이터프레임 화면에 보여주기
+            for i in range(self.df_stock.shape[1]):
+                col_name = self.df_stock.columns[i] # 칼럼명
+                for j in range(self.df_stock.shape[0]):
+                    val = self.df_stock[col_name][j] # 날짜 or 종가 요소
+                    item = QTableWidgetItem(str(val))
+                    self.tbl_stock_info.setItem(j,i,item)
+
+            self.tbl_stock_info.verticalHeader().hide()
 
         # 주가정보 TAB-엑셀 다운로드
         self.btn_stock_toExcel.clicked.connect(self.btnDownloadExcel)
@@ -84,6 +94,9 @@ class WindowClass(QMainWindow, form_class):
         tbl_intrst_intrst_header.resizeSection(0,80)
         tbl_intrst_intrst_header.resizeSection(1,280)
 
+        # 새로고침 시간 저장하기
+        self.btn_stock_refresh.clicked.connect(self.btnRefresh)
+
         # 관심종목 TAB-관심종목 추가
         self.tbl_intrst_all.doubleClicked.connect(self.addIntrst)
 
@@ -102,45 +115,45 @@ class WindowClass(QMainWindow, form_class):
 
         # 종목별 종가 불러오기 => 데이터프레임 생성
         if len(self.intrstSet) == 0 :
-            return
-        i=0
-        for ticker in self.intrstSet:
-            temp_df = self.server.getStockClose(now[:11],ticker)        
-            stockName = self.tickerDict[ticker]
+            self.tbl_stock_info.setRowCount(0)
+        else:
+            i=0
+            for ticker in self.intrstSet:
+                temp_df = self.server.getStockClose(now[:11],ticker)        
+                stockName = self.tickerDict[ticker]
 
-            temp_df[stockName] = temp_df['Close']
-            temp_df = temp_df[stockName]
+                temp_df[stockName] = temp_df['Close']
+                temp_df = temp_df[stockName]
 
-            if i==0:
-                self.df_stock = temp_df
-                i+=1
-            else:
-                self.df_stock = pd.concat([self.df_stock,temp_df], axis=1)
+                if i==0:
+                    self.df_stock = temp_df
+                    i+=1
+                else:
+                    self.df_stock = pd.concat([self.df_stock,temp_df], axis=1)
 
-        if type(self.df_stock) == 'pandas.core.series.Series':
-            # 종목이 하나일 경우 Series 이기에 DataFrame 타입으로 변환
-            self.df_stock=self.df_stock.to_frame()
-        
-        print(type(self.df_stock))
-        self.df_stock = self.df_stock.reset_index(drop=False)
-        # Date column 형식 바꾸기
-        self.df_stock['Date']=self.df_stock['Date'].apply(lambda x:x.strftime('%Y-%m-%d'))
+            if type(self.df_stock) == 'pandas.core.series.Series':
+                # 종목이 하나일 경우 Series 이기에 DataFrame 타입으로 변환
+                self.df_stock=self.df_stock.to_frame()
+            
+            self.df_stock = self.df_stock.reset_index(drop=False).sort_values(by='Date', ascending=False).reset_index(drop=True)
+            # Date column 형식 바꾸기
+            self.df_stock['Date']=self.df_stock['Date'].apply(lambda x:x.strftime('%Y-%m-%d'))
 
-        self.tbl_stock_info.setRowCount(self.df_stock.shape[0])
-        self.tbl_stock_info.setColumnCount(self.df_stock.shape[1])
-        self.tbl_stock_info.setHorizontalHeaderLabels(self.df_stock.columns.tolist())
+            self.tbl_stock_info.setRowCount(self.df_stock.shape[0])
+            self.tbl_stock_info.setColumnCount(self.df_stock.shape[1])
+            self.tbl_stock_info.setHorizontalHeaderLabels(self.df_stock.columns.tolist())
 
-        # 생성된 종목-종가 데이터프레임 화면에 보여주기
-        for i in range(self.df_stock.shape[1]):
-            col_name = self.df_stock.columns[i] # 칼럼명
-            for j in range(self.df_stock.shape[0]):
-                val = self.df_stock[col_name][j] # 날짜 or 종가 요소
-                item = QTableWidgetItem(str(val))
-                self.tbl_stock_info.setItem(j,i,item)
+            # 생성된 종목-종가 데이터프레임 화면에 보여주기
+            for i in range(self.df_stock.shape[1]):
+                col_name = self.df_stock.columns[i] # 칼럼명
+                for j in range(self.df_stock.shape[0]):
+                    val = self.df_stock[col_name][j] # 날짜 or 종가 요소
+                    item = QTableWidgetItem(str(val))
+                    self.tbl_stock_info.setItem(j,i,item)
 
-        self.tbl_stock_info.verticalHeader().hide()
-        self.server.saveRefreshTime(now)
-        self.txt_stock_refreshTime.setText(now)    
+            self.tbl_stock_info.verticalHeader().hide()
+            self.server.saveRefreshTime(now)
+            self.txt_stock_refreshTime.setText(now)    
 
     # 관심종목 TABLE 및 DB에 종목 추가
     def addIntrst(self):
@@ -174,7 +187,16 @@ class WindowClass(QMainWindow, form_class):
 
     # 프로그램 종료시 이벤트
     def closeEvent(self, event):
-        self.server.saveStock(self.df_stock.to_dict())
+        if len(self.intrstSet) > 0 :
+            stockDict = set()
+            for ticker in self.intrstSet:
+                stockDict.add(self.tickerDict[ticker])
+
+            columns = list(stockDict.intersection(set(self.df_stock.columns.tolist())))     
+            columns.append('Date')
+            self.server.saveStock(self.df_stock[columns].to_dict())
+        else:
+            self.server.clearStock()
         pass
         
 

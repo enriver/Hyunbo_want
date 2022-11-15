@@ -23,8 +23,13 @@ class Server(Firebase, KRX):
         self.db.deleteDB()
         self.db.updateDB(dfStockDict)
 
+    # 주가 정보 DB에서 전부 삭제하기
+    def clearStock(self):
+        self.db.setAddress('STOCK_CLOSE_INFO')
+        self.db.deleteDB()
+
     # DB에서 주가 정보 불러오기
-    def getStockFromDB(self):
+    def getStockCloseFromDB(self):
         if self.db.getAddress() != 'STOCK_CLOSE_INFO':
             self.db.setAddress('STOCK_CLOSE_INFO')
 
@@ -46,7 +51,7 @@ class Server(Firebase, KRX):
 
         if refreshTime is None:
             return None
-        return refreshTime
+        return refreshTime.replace('"','')
 
     # {Ticker:종목명} dictionary return
     def getTickerInfo(self):
