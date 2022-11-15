@@ -1,6 +1,7 @@
 from datetime import datetime
 import pandas as pd
 import sys
+import webbrowser
 
 from server import Server
 from PyQt5.QtWidgets import *
@@ -94,6 +95,9 @@ class WindowClass(QMainWindow, form_class):
         tbl_intrst_intrst_header.resizeSection(0,80)
         tbl_intrst_intrst_header.resizeSection(1,280)
 
+        # investing.com 크롤링
+        self.btn_investing_search.clicked.connect(self.searchInvesting)
+
         # 새로고침 시간 저장하기
         self.btn_stock_refresh.clicked.connect(self.btnRefresh)
 
@@ -103,10 +107,16 @@ class WindowClass(QMainWindow, form_class):
         # 관심종목 TAB-관심종목 삭제
         self.tbl_intrst_intrst.doubleClicked.connect(self.deleteIntrst)
 
+    # Investing.com 크롤링
+    def searchInvesting(self):
+        webbrowser.open('investing.com/equities/')
 
     # EXCEL 다운로드
     def btnDownloadExcel(self):
-        self.df_stock.to_csv('현보_'+datetime.today().strftime('%Y-%m-%d')+'.csv')
+        if len(self.intrstSet) <= 0:
+            print('관심 종목을 먼저 추가해주세요')
+        else:
+            self.df_stock.to_csv('현보_'+datetime.today().strftime('%Y-%m-%d')+'.csv')
 
     # 새로고침 버튼 클릭
     def btnRefresh(self):
